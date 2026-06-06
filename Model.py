@@ -14,7 +14,16 @@ class Model(Database):
     @abstractmethod
     def allowed_fields(self):
         pass
-
+    
+    def Read(self, primary_key: dict):
+        where_clause = " AND ".join([f"{k} = '{v}'" for k, v in primary_key.items()])
+        self.cursor.execute(f"SELECT * FROM {self.table} WHERE {where_clause}")
+        return self.cursor.fetchone()
+    
+    def ReadAll(self):
+        self.cursor.execute(f"SELECT * FROM {self.table}")
+        return self.cursor.fetchall()
+    
     def Insert(self, data_table: dict):
         filtered_data = {k: v for k, v in data_table.items() if k in self.allowed_fields}
         keys_str = ", ".join(filtered_data.keys())
