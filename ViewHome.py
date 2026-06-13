@@ -1,15 +1,17 @@
 import tkinter as tk
 from tkinter import ttk
+from BaseView import BaseView
 
 
-class ViewHome(ttk.Frame):
+class ViewHome(BaseView):
     def __init__(self, parent, router):
         super().__init__(parent)
-        self.router = router
-        self.presenter = None
 
         label = ttk.Label(self, text="Welcome to the Home Page", font=("Arial", 18))
         label.pack(pady=20)
+
+        self.status_label = ttk.Label(self, text="")
+        self.status_label.pack(pady=8)
 
         btn_settings = ttk.Button(self, text="Go to Settings", command=self.go_settings)
         btn_settings.pack(pady=10)
@@ -17,17 +19,14 @@ class ViewHome(ttk.Frame):
         btn_profile = ttk.Button(self, text="Go to Profile", command=self.go_profile)
         btn_profile.pack(pady=10)
 
-    def attach_presenter(self, presenter):
-        self.presenter = presenter
-
     def go_settings(self):
         if self.presenter is not None:
             self.presenter.open_settings()
         else:
-            self.router.show_page("Settings")
+            self.open_route("Settings")
 
     def go_profile(self):
         if self.presenter is not None:
             self.presenter.open_profile()
         else:
-            self.router.show_page("Profile")
+            self.open_route("Profile")

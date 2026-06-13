@@ -22,6 +22,18 @@ class Presenter:
             raise RuntimeError("Presenter cannot open a view without a router")
         return self.router.show_page(route_name)
 
+    def navigate(self, route_name):
+        return self.view(route_name)
+
+    def present(self, method_name, *args, **kwargs):
+        if self._view is None:
+            return None
+
+        view_method = getattr(self._view, method_name, None)
+        if callable(view_method):
+            return view_method(*args, **kwargs)
+        return None
+
     def start(self):
         pass
 

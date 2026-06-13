@@ -1,20 +1,28 @@
 from abc import abstractmethod
 from importlib import import_module
+from dotenv import dotenv_values, load_dotenv
 import tkinter as tk
 from tkinter import ttk
+
+from PresenterFactory import PresenterFactory
 
 class Router(tk.Tk):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        
-        self.title("Multipage Tkinter Application")
-        self.geometry("600x400")
+        dotenv_path = ".env"
+        load_dotenv(dotenv_path)
+        env = dotenv_values(dotenv_path)
+        self.title(env.get("APP_NAME", "MVP App"))
+        self.geometry(env.get("APP_GEOMETRY", "600x400"))
+        self.state(env.get("APP_STATE", "normal"))
         container = ttk.Frame(self)
         container.pack(side="top", fill="both", expand=True)
         container.grid_rowconfigure(0, weight=1)
         container.grid_columnconfigure(0, weight=1)
         self.pages = {}
         self.presenters = {}
+        self.current_page_name = None
+        self.presenter_factory = PresenterFactory()
 
         for route_name, route_config in self.routes.items():
             view_class = self._resolve_class(route_config["view"])
@@ -24,8 +32,12 @@ class Router(tk.Tk):
             page_instance = view_class(parent=container, router=self)
             self.pages[route_name] = page_instance
 
-            if presenter_class is not None:
-                presenter = presenter_class(view=page_instance, router=self)
+            presenter = self.presenter_factory.create(
+                presenter_class,
+                view=page_instance,
+                router=self,
+            )
+            if presenter is not None:
                 self.presenters[route_name] = presenter
                 if hasattr(page_instance, "attach_presenter"):
                     page_instance.attach_presenter(presenter)
@@ -39,11 +51,23 @@ class Router(tk.Tk):
 
     def show_page(self, page_name):
         """ Brings the specified page frame to the front. """
+        current_presenter = self.presenters.get(self.current_page_name)
+        if current_presenter is not None:
+            current_presenter.stop()
+
         page = self.pages.get(page_name)
         if page:
             page.tkraise()
+            self.current_page_name = page_name
+
+            current_presenter = self.presenters.get(page_name)
+            if current_presenter is not None:
+                current_presenter.start()
         else:
             print(f"Error: Page '{page_name}' does not exist.")
+
+    def get_presenter(self, page_name):
+        return self.presenters.get(page_name)
 
     def _resolve_class(self, class_ref):
         if isinstance(class_ref, str):

@@ -6,9 +6,25 @@ class PresenterHome(Presenter):
         super().__init__(view=view, router=router, model=ModelItem())
 
     def open_settings(self):
-        self.view("Settings")
+        self.navigate("Settings")
 
     def open_profile(self):
-        self.view("Profile")
+        self.navigate("Profile")
+
+    def start(self):
+        self.load_item_summary()
+
+    def stop(self):
+        self.present("set_status", "")
+
+    def load_item_summary(self):
+        try:
+            items = self.model.ReadAll()
+            item_count = len(items)
+            self.present("set_status", f"Total item: {item_count}")
+            return item_count
+        except Exception as exc:
+            self.present("set_status", f"Model belum siap: {exc.__class__.__name__}")
+            return None
 
     
