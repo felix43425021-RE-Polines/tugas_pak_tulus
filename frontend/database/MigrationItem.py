@@ -1,4 +1,4 @@
-from frontend.Migration import Migration
+from .Migration import Migration
 
 class MigrationItem(Migration):
     def __init__(self):

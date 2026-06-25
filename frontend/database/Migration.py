@@ -1,4 +1,4 @@
-from frontend.Database import Database
+from .Database import Database
 
 class Migration(Database):
     def __init__(self):
